@@ -1,3 +1,0 @@
-prueba_proyecto:./prueba//prueba_proyecto_log
-prueba_proyecto1:./prueba///prueba_proyecto1_log
-prueba_proyecto2:./prueba///prueba_proyecto2_log
