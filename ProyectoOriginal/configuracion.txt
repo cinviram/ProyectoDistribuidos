@@ -1,0 +1,2 @@
+prueba_proyecto:./prueba//prueba_proyecto_log
+baseDatosPrincipal:./prueba//baseDatosPrincipal_log
