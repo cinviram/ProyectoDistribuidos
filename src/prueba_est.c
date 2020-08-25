@@ -1,3 +1,10 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <time.h>
+
 #include "logdb.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +21,7 @@ unsigned long hash(unsigned char *str);
 int sharding2(int salto,conexionlogdb *conexion, int *puertos,int totalElementos,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]);
 int obtenerArregloGet(char *archivoGets, char resultado[totalGets][tamanoLineasBase],int lineas);
 int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],int totalElementosGets);
+double tiempo();
 
 conexionlogdb *con;
 conexionlogdb *con1;
@@ -255,3 +263,15 @@ int sharding2(int salto,conexionlogdb *conexion, int *puertos,int totalElementos
 		}
 	return 0;
 }
+
+double tiempo(){
+	struct timespec tsp;
+
+	clock_gettime(CLOCK_REALTIME, &tsp);
+
+	double secs = (double)tsp.tv_sec;
+	double nano = (double)tsp.tv_nsec / 1000000000.0;
+
+	return secs + nano;
+}
+
