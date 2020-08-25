@@ -13,7 +13,7 @@
 //Cambiar en base al tamaño de elementos de base
 #define totalElementosBase 3000
 //Constante a cambiar para hacer gets
-#define totalGets 300
+#define totalGets 3000
 
 int leerLinea(char *nombreArchivo);
 int obtenerArreglosBase(char *archivoBases,char resultado[totalElementosBase][tamanoLineasBase],int lineas);
