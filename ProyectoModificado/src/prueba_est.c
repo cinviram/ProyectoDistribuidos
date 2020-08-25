@@ -4,26 +4,27 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#include <fcntl.h>
 
 #include "logdb.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define tamanoLineasBase 50
+#define tamanoLineasBase 150
 //Cambiar en base al tamaño de elementos de base
-#define totalElementosBase 1100
+#define totalElementosBase 3000
 //Constante a cambiar para hacer gets
-#define totalGets 100
+#define totalGets 300
 
 int leerLinea(char *nombreArchivo);
-int sharding(int salto,conexionlogdb *conexion, int *puertos,int totalParticiones,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]);
 int obtenerArreglosBase(char *archivoBases,char resultado[totalElementosBase][tamanoLineasBase],int lineas);
 int putElementosBase(conexionlogdb *conexion,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase],int totalElementos);
 unsigned long hash_function(char* str);
 unsigned long hash(unsigned char *str);
-int sharding2(int salto,conexionlogdb *conexion, int *puertos,int totalElementos,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]);
+int sharding(int salto,conexionlogdb *conexion, int *puertos,int totalElementos,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]);
 int obtenerArregloGet(char *archivoGets, char resultado[totalGets][tamanoLineasBase],int lineas);
 int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],int totalElementosGets);
 double tiempo();
+int escribirTiemposResultados(char *nombreArchivo,int cantidadGets,double tiempo);
 
 conexionlogdb *con;
 conexionlogdb *con1;
@@ -40,7 +41,6 @@ int main(int argc, char **argv){
 
 	printf("%d\n",abrir_db(con,"baseDatosPrincipal"));
 
-	//Establecer dimensiones como constantes
 	char claves[totalElementosBase][tamanoLineasBase];
 	char valores[totalElementosBase][tamanoLineasBase];
 
@@ -54,19 +54,15 @@ int main(int argc, char **argv){
 
 	int totalElementos = leerLinea("./prueba/baseDatosPrincipal_log");
 
-	//printf("%d \n",totalElementos);
 	int numeroParticiones=4;
 	int puertos[4] ={5555,8888,7777,4444};
 	int salto=totalElementos/numeroParticiones;
-	//printf("%d \n",salto);
-	//sharding(salto,con,puertos,numeroParticiones,claves,valores);
-	sharding2(salto,con,puertos,totalElementosBase,claves,valores);
+	sharding(salto,con,puertos,totalElementosBase,claves,valores);
 
 	compactar(con);
 
 	char gets[totalGets][tamanoLineasBase];
 	obtenerArregloGet("./base/gets.txt",gets,tamanoLineasBase);
-
 
 	printf("%s\n",get_val(con1, "Ola"));
 	printf("%s\n",get_val(con, "Ralph"));
@@ -74,18 +70,6 @@ int main(int argc, char **argv){
 	printf("%s\n",get_val(con3, "Alli"));
 
 	getElementosBase(puertos,gets,totalGets);
-
-	//unsigned long prueba = hash_function(claves[5]);
-	//printf("%ld \n",prueba);
-
-	//unsigned long prueba2= prueba%4;
-	//printf("%ld \n",prueba2);
-
-	//unsigned long prueba = hash( (unsigned char*) claves[0]);
-	//printf("%ld \n",prueba);
-
-	//unsigned long prueba2= prueba%4;
-	//printf("%ld \n",prueba2);
 
 	cerrar_db(con);
 	cerrar_db(con1);
@@ -142,6 +126,10 @@ int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],in
 	double tiempoFinal=tiempo();
 	double tiempoResultante= tiempoFinal-tiempoInicial;
 	printf("%f \n",tiempoResultante);
+	//Comentar al usar segundo ambiente de pruebas
+	escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
+	//Descomentar para eefectuar pruebas en segundo ambiente de pruebas
+	//escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
 	return 0;
 }
 
@@ -149,7 +137,6 @@ int obtenerArreglosBase(char *archivoBases,char resultado[totalElementosBase][ta
     FILE *fp;
 	int temporal=0;
     fp = fopen(archivoBases, "r");
-
     if (fp == NULL)
     {
         printf("Error al abrir el archivo \n");
@@ -187,58 +174,7 @@ int obtenerArregloGet(char *archivoGets, char resultado[totalGets][tamanoLineasB
     return 0;
 }
 
-int sharding(int salto,conexionlogdb *conexion, int *puertos,int totalParticiones,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]){
-	con1=conectar_db("127.0.0.1", puertos[1]);
-	con2= conectar_db("127.0.0.1", puertos[2]);
-	con3=conectar_db("127.0.0.1", puertos[3]);
-
-	crear_db(con1,"particion1");
-	crear_db(con2,"particion2");
-	crear_db(con3,"particion3");
-	
-	abrir_db(con1,"particion1");
-	abrir_db(con2,"particion2");
-	abrir_db(con3,"particion3");
-
-	for(int i = 1;i<totalParticiones;i++){
-		int tope=i+1;
-		for(int j = salto*i;j<salto*tope;j++){
-			if(i==1){
-				put_val(con1,claves[j],valores[j]);
-				eliminar(conexion,claves[j]);
-			}
-			if(i==2){
-				put_val(con2,claves[j],valores[j]);
-				eliminar(conexion,claves[j]);
-			}
-			if(i==3){
-				put_val(con3,claves[j],valores[j]);
-				eliminar(conexion,claves[j]);
-			}
-		}
-	}
-	return 0;
-}
-
-unsigned long hash_function(char* str) {
-    unsigned long i = 0;
-    for (int j=0; str[j]; j++)
-        i += str[j];
-    return i % 8;
-}
-
-unsigned long hash(unsigned char *str){
-    unsigned long hash=5381;
-    int c;
-
-    while((c=*str++)){
-        hash=((hash<<5)+hash)+c;
-    }
-    return hash;
-}
-
-
-int sharding2(int salto,conexionlogdb *conexion, int *puertos,int totalElementos,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]){
+int sharding(int salto,conexionlogdb *conexion, int *puertos,int totalElementos,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]){
 	con1=conectar_db("127.0.0.1", puertos[1]);
 	con2= conectar_db("127.0.0.1", puertos[2]);
 	con3=conectar_db("127.0.0.1", puertos[3]);
@@ -279,5 +215,26 @@ double tiempo(){
 	double nano = (double)tsp.tv_nsec / 1000000000.0;
 
 	return secs + nano;
+}
+
+int escribirTiemposResultados(char *nombreArchivo,int cantidadGets,double tiempo){
+	int fd;
+	fd=open(nombreArchivo,O_CREAT|O_RDWR|O_APPEND,S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH );
+    if(fd < 0) {
+		printf("Error al crear el archivo puede que ya exista un archivo con ese nombre o archivo no existe en el directorio especificado, ingrese un archivo valido\n");
+    	return 0;
+	}
+
+	char temp1[5]={0};
+    char temp2[10]={0};
+    char escribir[20]={0};
+    sprintf(temp1, "%d", cantidadGets); 
+    sprintf(temp2, "%f", tiempo);
+    strcat(escribir,temp1);
+    strcat(escribir,",");
+    strcat(escribir,temp2);
+    strcat(escribir,"\n");
+    write(fd,escribir,strlen(escribir));
+	return 0;
 }
 
