@@ -9,8 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define tamanoLineasBase 50
-#define totalElementosBase 945
-#define totalGets 300
+//Cambiar en base al tamaño de elementos de base
+#define totalElementosBase 1100
+//Constante a cambiar para hacer gets
+#define totalGets 100
 
 int leerLinea(char *nombreArchivo);
 int sharding(int salto,conexionlogdb *conexion, int *puertos,int totalParticiones,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]);
@@ -120,6 +122,7 @@ int putElementosBase(conexionlogdb *conexion,char claves[totalElementosBase][tam
 }
 
 int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],int totalElementosGets){
+	double tiempoInicial=tiempo();
 	for(int i=0;i<totalElementosGets;i++){
 		unsigned long prueba = hash( (unsigned char*) clavesget[i]);
 		unsigned long prueba2= prueba%4;
@@ -136,6 +139,9 @@ int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],in
 			printf("Get particion 3: %s\n",get_val(con3,clavesget[i]));
 		}
 	}
+	double tiempoFinal=tiempo();
+	double tiempoResultante= tiempoFinal-tiempoInicial;
+	printf("%f \n",tiempoResultante);
 	return 0;
 }
 
