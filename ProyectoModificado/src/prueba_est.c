@@ -31,8 +31,6 @@ conexionlogdb *con1;
 conexionlogdb *con2;
 conexionlogdb *con3;
 
-
-
 int main(int argc, char **argv){
 
 	con= conectar_db("127.0.0.1", 5555);
@@ -111,25 +109,29 @@ int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],in
 		unsigned long prueba = hash( (unsigned char*) clavesget[i]);
 		unsigned long prueba2= prueba%4;
 		if(prueba2==0){
-			printf("Get particion 0: %s\n",get_val(con,clavesget[i]));
+			//printf("Get particion 0: %s\n",get_val(con,clavesget[i]));
+			get_val(con,clavesget[i]);
 		}
 		if(prueba2==1){
-			printf("Get particion 1: %s\n",get_val(con1,clavesget[i]));
+			//printf("Get particion 1: %s\n",get_val(con1,clavesget[i]));
+			get_val(con1,clavesget[i]);
 		}
 		if(prueba2==2){
-			printf("Get particion 2: %s\n",get_val(con2,clavesget[i]));
+			//printf("Get particion 2: %s\n",get_val(con2,clavesget[i]));
+			get_val(con2,clavesget[i]);
 		}
 		if(prueba2==3){
-			printf("Get particion 3: %s\n",get_val(con3,clavesget[i]));
+			//printf("Get particion 3: %s\n",get_val(con3,clavesget[i]));
+			get_val(con3,clavesget[i]);
 		}
 	}
 	double tiempoFinal=tiempo();
 	double tiempoResultante= tiempoFinal-tiempoInicial;
 	printf("%f \n",tiempoResultante);
 	//Comentar al usar segundo ambiente de pruebas
-	escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
-	//Descomentar para eefectuar pruebas en segundo ambiente de pruebas
 	//escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
+	//Descomentar para eefectuar pruebas en segundo ambiente de pruebas
+	escribirTiemposResultados("./base/tiemposAmbientePruebas2.txt",totalGets,tiempoResultante);
 	return 0;
 }
 
