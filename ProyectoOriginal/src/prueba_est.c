@@ -21,7 +21,7 @@ int putElementosBase(conexionlogdb *conexion,char claves[totalElementosBase][tam
 unsigned long hash_function(char* str);
 unsigned long hash(unsigned char *str);
 int obtenerArregloGet(char *archivoGets, char resultado[totalGets][tamanoLineasBase],int lineas);
-getElementosBase(conexionlogdb *conexion,char clavesget[totalGets][tamanoLineasBase],int totalElementosGets);
+int getElementosBase(conexionlogdb *conexion,char clavesget[totalGets][tamanoLineasBase],int totalElementosGets);
 double tiempo();
 int escribirTiemposResultados(char *nombreArchivo,int cantidadGets,double tiempo);
 
@@ -88,9 +88,9 @@ int getElementosBase(conexionlogdb *conexion,char clavesget[totalGets][tamanoLin
 	double tiempoResultante= tiempoFinal-tiempoInicial;
 	printf("%f \n",tiempoResultante);
 	//Comentar al usar segundo ambiente de pruebas
-	//escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
+	escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
 	//Descomentar para eefectuar pruebas en segundo ambiente de pruebas
-	escribirTiemposResultados("./base/tiemposAmbientePruebas2.txt",totalGets,tiempoResultante);
+	//escribirTiemposResultados("./base/tiemposAmbientePruebas2.txt",totalGets,tiempoResultante);
 	return 0;
 }
 int obtenerArreglosBase(char *archivoBases,char resultado[totalElementosBase][tamanoLineasBase],int lineas){

@@ -128,10 +128,10 @@ int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],in
 	double tiempoFinal=tiempo();
 	double tiempoResultante= tiempoFinal-tiempoInicial;
 	printf("%f \n",tiempoResultante);
-	//Comentar al usar segundo ambiente de pruebas
+	//Descomentar al efectuar pruebas en primer ambiente de pruebas
 	//escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
-	//Descomentar para eefectuar pruebas en segundo ambiente de pruebas
-	escribirTiemposResultados("./base/tiemposAmbientePruebas2.txt",totalGets,tiempoResultante);
+	//Descomentar para efectuar pruebas en segundo ambiente de pruebas
+	//escribirTiemposResultados("./base/tiemposAmbientePruebas2.txt",totalGets,tiempoResultante);
 	return 0;
 }
 
