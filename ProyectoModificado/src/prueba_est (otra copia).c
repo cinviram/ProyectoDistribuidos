@@ -14,7 +14,6 @@
 #define totalElementosBase 3000
 //Constante a cambiar para hacer gets
 #define totalGets 3000
-#define inicioFalla 200
 
 int obtenerArreglosBase(char *archivoBases,char resultado[totalElementosBase][tamanoLineasBase],int lineas);
 int putElementosBase(conexionlogdb *conexion,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase],int totalElementos);
@@ -22,16 +21,14 @@ unsigned long hash_function(char* str);
 unsigned long hash(unsigned char *str);
 int sharding(conexionlogdb *conexion, int *puertos,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase],int numeroParticiones);
 int obtenerArregloGet(char *archivoGets, char resultado[totalGets][tamanoLineasBase],int lineas);
-int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],int numeroParticiones,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]);
+int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],int totalElementosGets,int numeroParticiones);
 double tiempo();
 int escribirTiemposResultados(char *nombreArchivo,int cantidadGets,double tiempo);
-int getElementosFallas(int *puertos,char clavesget[totalGets][tamanoLineasBase],int numeroParticiones);
 
 conexionlogdb *con;
 conexionlogdb *con1;
 conexionlogdb *con2;
 conexionlogdb *con3;
-conexionlogdb *con4;
 
 int main(int argc, char **argv){
 
@@ -40,11 +37,6 @@ int main(int argc, char **argv){
 	printf("%d\n",crear_db(con,"baseDatosPrincipal"));
 
 	printf("%d\n",abrir_db(con,"baseDatosPrincipal"));
-
-	con4= conectar_db("127.0.0.1", 9999);
-
-	crear_db(con4,"baseDatosPrincipalResplado");
-	abrir_db(con4,"baseDatosPrincipalResplado");
 
 	//printf("%d\n",crear_db(con,"baseDatosPrincipal2"));
 
@@ -59,16 +51,10 @@ int main(int argc, char **argv){
 	obtenerArreglosBase("./base/valores.txt",valores,tamanoLineasBase);
 
 	putElementosBase(con,claves,valores,totalElementosBase);
-	putElementosBase(con4,claves,valores,totalElementosBase);
 
 	//No borrar
 	printf("%s\n",get_val(con, "Mord"));
 
-	char clavesRespaldo[totalElementosBase][tamanoLineasBase];
-	char valoresRespaldo[totalElementosBase][tamanoLineasBase];
-
-	obtenerArreglosBase("./base/claves.txt",clavesRespaldo,tamanoLineasBase);
-	obtenerArreglosBase("./base/valores.txt",valoresRespaldo,tamanoLineasBase);
 
 	int numeroParticiones=4;
 	int puertos[4] ={5555,8888,7777,4444};
@@ -84,15 +70,7 @@ int main(int argc, char **argv){
 	//printf("%s\n",get_val(con2, "Darb"));
 	//printf("%s\n",get_val(con3, "Alli"));
 
-	//printf("prueba %s.\n",claves[0]);
-	getElementosBase(puertos,gets,numeroParticiones,clavesRespaldo,valoresRespaldo);
-
-	//printf("%s g \n ",gets[0]);
-
-	//printf("P1 %s\n",get_val(con1, "Meg"));
-	//printf("%s\n",get_val(con, "Ralph"));
-	//printf("P2 %s\n",get_val(con2, "Fake"));
-	//printf("%s\n",get_val(con3, "Alli"));
+	getElementosBase(puertos,gets,totalGets,numeroParticiones);
 
 	//Cerrar conexión
 	//cerrar_db(con3);
@@ -101,6 +79,8 @@ int main(int argc, char **argv){
 	cerrar_db(con1);
 	cerrar_db(con2);
 	cerrar_db(con3);
+
+
 
 	return 0;
 }
@@ -113,74 +93,35 @@ int putElementosBase(conexionlogdb *conexion,char claves[totalElementosBase][tam
 	return 0;
 }
 
-int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],int numeroParticiones,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase]){
+int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],int totalElementosGets,int numeroParticiones){
 	double tiempoInicial=tiempo();
-	for(int i=0;i<=inicioFalla;i++){
+	for(int i=0;i<totalElementosGets;i++){
 		unsigned long prueba = hash( (unsigned char*) clavesget[i]);
 		unsigned long prueba2= prueba%numeroParticiones;
-		if(i==inicioFalla){
-			cerrar_db(con3);
-			cerrar_db(con);
-			sharding(con4,puertos,claves,valores,3);
-			compactar(con4);
-			compactar(con1);
-			compactar(con2);
-			getElementosFallas(puertos,clavesget,3);
+		if(prueba2==0){
+			//printf("Get particion 0: %s\n",get_val(con,clavesget[i]));
+			get_val(con,clavesget[i]);
 		}
-		else{
-			if(prueba2==0){
-				//printf("valor i %d clave %s \n",i,clavesget[i]);
-				//printf("Get particion 0: %s\n",get_val(con,clavesget[i]));
-				get_val(con,clavesget[i]);
-			}
-			if(prueba2==1){
-				//printf("valor i %d clave %s \n",i,clavesget[i]);
-				//printf("Get particion 1: %s\n",get_val(con1,clavesget[i]));
-				get_val(con1,clavesget[i]);
-			}
-			if(prueba2==2){
-				//printf("valor i %d clave %s \n",i,clavesget[i]);
-				//printf("Get particion 2: %s\n",get_val(con2,clavesget[i]));
-				get_val(con2,clavesget[i]);
-			}
-			if(prueba2==3){
-				//printf("valor i %d clave %s \n",i,clavesget[i]);
-				//printf("Get particion 3: %s\n",get_val(con3,clavesget[i]));
-				get_val(con3,clavesget[i]);
-			}
+		if(prueba2==1){
+			//printf("Get particion 1: %s\n",get_val(con1,clavesget[i]));
+			get_val(con1,clavesget[i]);
+		}
+		if(prueba2==2){
+			//printf("Get particion 2: %s\n",get_val(con2,clavesget[i]));
+			get_val(con2,clavesget[i]);
+		}
+		if(prueba2==3){
+			//printf("Get particion 3: %s\n",get_val(con3,clavesget[i]));
+			get_val(con3,clavesget[i]);
 		}
 	}
 	double tiempoFinal=tiempo();
 	double tiempoResultante= tiempoFinal-tiempoInicial;
 	printf("%f \n",tiempoResultante);
 	//Descomentar al efectuar pruebas en primer ambiente de pruebas
-	escribirTiemposResultados("./base/fallasAmbientePruebas1.txt",totalGets,tiempoResultante);
+	//escribirTiemposResultados("./base/tiemposAmbientePruebas1.txt",totalGets,tiempoResultante);
 	//Descomentar para efectuar pruebas en segundo ambiente de pruebas
 	//escribirTiemposResultados("./base/tiemposAmbientePruebas2.txt",totalGets,tiempoResultante);
-	return 0;
-}
-
-int getElementosFallas(int *puertos,char clavesget[totalGets][tamanoLineasBase],int numeroParticiones){
-	for(int i=inicioFalla;i<totalGets;i++){
-		unsigned long pruebaFalla = hash( (unsigned char*) clavesget[i]);
-		unsigned long pruebaFalla2= pruebaFalla%numeroParticiones;
-		//printf("%ld hash get \n",pruebaFalla2);
-		if(pruebaFalla2==0){
-			//printf("valor i2 %d clave %s \n",i,clavesget[i]);
-			//printf("Get particion 0: %s\n",get_val(con4,clavesget[i]));
-			get_val(con4,clavesget[i]);
-		}
-		if(pruebaFalla2==1){
-			//printf("valor i2 %d clave %s \n",i,clavesget[i]);
-			//printf("Get particion 1: %s\n",get_val(con1,clavesget[i]));
-			get_val(con1,clavesget[i]);
-		}
-		if(pruebaFalla2==2){
-			//printf("valor i2 %d clave %s \n",i,clavesget[i]);
-			//printf("Get particion 2: %s\n",get_val(con2,clavesget[i]));
-			get_val(con2,clavesget[i]);
-		}
-	}
 	return 0;
 }
 
@@ -226,57 +167,34 @@ int obtenerArregloGet(char *archivoGets, char resultado[totalGets][tamanoLineasB
 }
 
 int sharding(conexionlogdb *conexion, int *puertos,char claves[totalElementosBase][tamanoLineasBase],char valores[totalElementosBase][tamanoLineasBase],int numeroParticiones){
+	con1=conectar_db("127.0.0.1", puertos[1]);
+	con2= conectar_db("127.0.0.1", puertos[2]);
+	con3=conectar_db("127.0.0.1", puertos[3]);
+
+	crear_db(con1,"particion1");
+	crear_db(con2,"particion2");
+	crear_db(con3,"particion3");
 	
-	if(numeroParticiones==3){
-		crear_db(con1,"particion1.2");
-		abrir_db(con1,"particion1.2");
-		crear_db(con2,"particion2.2");
-		abrir_db(con2,"particion2.2");
+	abrir_db(con1,"particion1");
+	abrir_db(con2,"particion2");
+	abrir_db(con3,"particion3");
 
-		for(int i = 0;i<totalElementosBase;i++){
-			unsigned long prueba = hash( (unsigned char*) claves[i]);
-			unsigned long prueba2 = prueba%numeroParticiones;
-			//printf("%ld hash Sharding %s \n",prueba2,claves[i]);
-				if(prueba2==1){
-					put_val(con1,claves[i],valores[i]);
-					eliminar(conexion,claves[i]);
-				}
-				if(prueba2==2){
-					put_val(con2,claves[i],valores[i]);
-					eliminar(conexion,claves[i]);
-				}
+	for(int i = 0;i<totalElementosBase;i++){
+		unsigned long prueba = hash( (unsigned char*) claves[i]);
+		unsigned long prueba2= prueba%numeroParticiones;
+			if(prueba2==1){
+				put_val(con1,claves[i],valores[i]);
+				eliminar(conexion,claves[i]);
 			}
-	}
-	if(numeroParticiones==4){
-		con1=conectar_db("127.0.0.1", puertos[1]);
-		con2= conectar_db("127.0.0.1", puertos[2]);
-		con3=conectar_db("127.0.0.1", puertos[3]);
-
-		crear_db(con1,"particion1");
-		crear_db(con2,"particion2");
-		crear_db(con3,"particion3");
-		
-		abrir_db(con1,"particion1");
-		abrir_db(con2,"particion2");
-		abrir_db(con3,"particion3");
-
-		for(int i = 0;i<totalElementosBase;i++){
-			unsigned long prueba = hash( (unsigned char*) claves[i]);
-			unsigned long prueba2= prueba%numeroParticiones;
-				if(prueba2==1){
-					put_val(con1,claves[i],valores[i]);
-					eliminar(conexion,claves[i]);
-				}
-				if(prueba2==2){
-					put_val(con2,claves[i],valores[i]);
-					eliminar(conexion,claves[i]);
-				}
-				if(prueba2==3){
-					put_val(con3,claves[i],valores[i]);
-					eliminar(conexion,claves[i]);
-				}
+			if(prueba2==2){
+				put_val(con2,claves[i],valores[i]);
+				eliminar(conexion,claves[i]);
 			}
-	}
+			if(prueba2==3){
+				put_val(con3,claves[i],valores[i]);
+				eliminar(conexion,claves[i]);
+			}
+		}
 	return 0;
 }
 
@@ -311,3 +229,4 @@ int escribirTiemposResultados(char *nombreArchivo,int cantidadGets,double tiempo
     write(fd,escribir,strlen(escribir));
 	return 0;
 }
+

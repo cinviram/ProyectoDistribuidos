@@ -5,3 +5,7 @@ baseDatosPrincipal:./prueba///baseDatosPrincipal_log
 particion1:./prueba///particion1_log
 particion2:./prueba///particion2_log
 particion3:./prueba///particion3_log
+baseDatosPrincipal2:./prueba///baseDatosPrincipal2_log
+baseDatosPrincipalResplado:./prueba///baseDatosPrincipalResplado_log
+particion1.2:./prueba///particion1.2_log
+particion2.2:./prueba///particion2.2_log
