@@ -13,7 +13,7 @@
 //Cambiar en base al tamaño de elementos de base
 #define totalElementosBase 3000
 //Constante a cambiar para hacer gets
-#define totalGets 3000
+#define totalGets 300
 #define inicioFalla 200
 
 int obtenerArreglosBase(char *archivoBases,char resultado[totalElementosBase][tamanoLineasBase],int lineas);
@@ -154,7 +154,7 @@ int getElementosBase(int *puertos,char clavesget[totalGets][tamanoLineasBase],in
 	double tiempoResultante= tiempoFinal-tiempoInicial;
 	printf("%f \n",tiempoResultante);
 	//Descomentar al efectuar pruebas en primer ambiente de pruebas
-	escribirTiemposResultados("./base/fallasAmbientePruebas1.txt",totalGets,tiempoResultante);
+	escribirTiemposResultados("./base/fallasAmbientePruebas2.txt",totalGets,tiempoResultante);
 	//Descomentar para efectuar pruebas en segundo ambiente de pruebas
 	//escribirTiemposResultados("./base/tiemposAmbientePruebas2.txt",totalGets,tiempoResultante);
 	return 0;
